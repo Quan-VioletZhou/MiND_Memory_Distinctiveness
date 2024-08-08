@@ -1,0 +1,170 @@
+---
+title: "R Notebook"
+output: html_notebook
+---
+
+This is an [R Markdown](http://rmarkdown.rstudio.com) Notebook. When you execute code within the notebook, the results appear beneath the code. 
+
+Try executing this chunk by clicking the *Run* button within the chunk or by placing your cursor inside it and pressing *Ctrl+Shift+Enter*. 
+
+```{r}
+library(dplyr)
+```
+
+```{r par file for run01}
+#import the most recent fmri_memory Data Result for run_01
+setwd("/Users/quanz/Documents/UM/Projects/Memory/Par_File/subjects")
+
+# loop through subjects
+subject_ids <- c("mindo162", "mindo163", "mindo165", "mindo176", "mindo178", "mindo180", "mindo195", "mindo195", "mindo205", "mindo303", "mindo314", "mindo315", "mindo317", "mindo320", "mindo326", "mindo328", "mindo330", "mindo331", "mindo332", "mindo333", "mindo334", "mindo335", "mindo337") # Add your subject IDs here
+
+for (subject in subject_ids) {
+  
+  # Loop through each run (01 and 02)
+  for (run in 1:2) {
+    
+    filename <- paste0(subject, "_run0", run, "_response.csv")
+    
+    Mem_responses_01 <- read.csv(filename)
+    
+    Response_Type_01 <- data.frame(Mem_responses_01$Response_Type)
+
+names(Response_Type_01)[names(Response_Type_01) == "Mem_responses_01.Response_Type"] <- "Response_Type"
+
+n <- nrow(Response_Type_01)
+
+Responses_01 <- data.frame()
+
+for (i in 1:n) {
+  Responses_01 <- rbind(Responses_01, data.frame(Response_Type = 0))
+  # Add the current row to the result
+  Responses_01 <- rbind(Responses_01, Response_Type_01[i, , drop = FALSE])
+  # Add a row of zeros after the current row
+}
+
+# The par file has 2 0s at the end for fixation, so compensate for that:
+Responses_01 <- rbind(Responses_01, data.frame(Response_Type = 0))
+Responses_01 <- rbind(Responses_01, data.frame(Response_Type = 0))
+
+rownames(Responses_01) <- NULL
+
+# change the answer inot updated codes:
+Responses_01 <- Responses_01 %>%
+  mutate(new_numbers = case_when(
+    Response_Type == 0 ~ 0,
+    Response_Type == 1 ~ 1,
+    Response_Type == 2 ~ 1,
+    Response_Type == 3 ~ 7,
+    Response_Type == 4 ~ 2,
+    Response_Type == 5 ~ 3,
+    Response_Type == 6 ~ 7,
+    Response_Type == 7 ~ 4,
+    Response_Type == 8 ~ 4,
+    Response_Type == 9 ~ 7,
+    Response_Type == 10 ~ 5,
+    Response_Type == 11 ~ 6,
+    Response_Type == 12 ~ 7,
+    Response_Type == 13 ~0
+  ))
+
+scene_filename <- paste0("Scenes.Objects.00", run, ".csv")
+
+Par_file <- read.csv(scene_filename, header = FALSE)
+
+Par_file$V2 <- Responses_01$new_numbers
+
+Par_file$V2 <- unlist(Par_file$V2)
+
+output_filename <- paste0(subject, ".Scenes.Objects.00", run, ".par")
+
+write.table(Par_file, file = output_filename, sep = "\t", row.names = FALSE, col.names = FALSE)
+
+  }}
+
+
+```
+
+
+```{r par file for manuually run01}
+#Change the file name!!!!!
+Mem_responses_01 <- read.csv("mindo317_run01_response.csv")
+
+Response_Type_01 <- data.frame(Mem_responses_01$Response_Type)
+
+names(Response_Type_01)[names(Response_Type_01) == "Mem_responses_01.Response_Type"] <- "Response_Type"
+
+n <- nrow(Response_Type_01)
+
+Responses_01 <- data.frame()
+
+for (i in 1:n) {
+  Responses_01 <- rbind(Responses_01, data.frame(Response_Type = 0))
+  # Add the current row to the result
+  Responses_01 <- rbind(Responses_01, Response_Type_01[i, , drop = FALSE])
+  # Add a row of zeros after the current row
+}
+
+# The par file has 2 0s at the end for fixation, so compensate for that
+Responses_01 <- rbind(Responses_01, data.frame(Response_Type = 0))
+Responses_01 <- rbind(Responses_01, data.frame(Response_Type = 0))
+
+rownames(Responses_01) <- NULL
+```
+
+
+```{r now change the 13 condition to 11 conditons}
+library(dplyr)
+
+Responses_01 <- Responses_01 %>%
+  mutate(new_numbers = case_when(
+    Response_Type == 0 ~ 0,
+    Response_Type == 1 ~ 1,
+    Response_Type == 2 ~ 1,
+    Response_Type == 3 ~ 7,
+    Response_Type == 4 ~ 2,
+    Response_Type == 5 ~ 3,
+    Response_Type == 6 ~ 7,
+    Response_Type == 7 ~ 4,
+    Response_Type == 8 ~ 4,
+    Response_Type == 9 ~ 7,
+    Response_Type == 10 ~ 5,
+    Response_Type == 11 ~ 6,
+    Response_Type == 12 ~ 7,
+    Response_Type == 13 ~0
+  ))
+
+
+```
+
+
+```{r par file for only 11 conditions}
+
+Par_file_001 <- read.csv("Scenes.Objects.001.csv", header = FALSE)
+
+Par_file_001$V2 <- Responses_01$new_numbers
+
+Par_file_001$V2 <- unlist(Par_file_001$V2)
+
+write.table(Par_file_001, file = "mindo317.Scenes.Objects.001.par", sep = "\t", row.names = FALSE, col.names = FALSE)
+```
+
+
+
+```{r OLD par file for run01}
+#Change the file!!!!!
+Par_file_001 <- read.csv("Scenes.Objects.001.csv", header = FALSE)
+
+Par_file_001$V2 <- Responses_01
+
+Par_file_001$V2 <- unlist(Par_file_001$V2)
+ 
+# !!!! Change the file name!!!!!
+write.table(Par_file_001, file = "mindo337.Scenes.Objects.002.par", sep = "\t", row.names = FALSE, col.names = FALSE)
+
+```
+
+Add a new chunk by clicking the *Insert Chunk* button on the toolbar or by pressing *Ctrl+Alt+I*.
+
+When you save the notebook, an HTML file containing the code and output will be saved alongside it (click the *Preview* button or press *Ctrl+Shift+K* to preview the HTML file).
+
+The preview shows you a rendered HTML copy of the contents of the editor. Consequently, unlike *Knit*, *Preview* does not run any R code chunks. Instead, the output of the chunk when it was last run in the editor is displayed.
